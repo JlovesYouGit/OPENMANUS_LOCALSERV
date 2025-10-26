@@ -1,0 +1,89 @@
+# Include package metadata and documentation
+include README.md
+include README_zh.md
+include README_ja.md
+include README_ko.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+include PACKAGE_GUIDE.md
+include WIKI_SETUP_GUIDE.md
+
+# Include configuration files
+include config/*.toml
+include config/*.example
+include config/*.yaml
+include config/*.json
+
+# Include model configurations
+include model_configs/*.json
+include model_configs/*.yaml
+
+# Include assets
+include assets/*.jpg
+include assets/*.png
+include assets/*.svg
+
+# Exclude development and test files
+exclude .env
+exclude .gitignore
+exclude .pre-commit-config.yaml
+exclude *.pyc
+exclude __pycache__
+
+# Exclude test files
+prune tests
+prune test_*.py
+prune *_test.py
+
+# Exclude samples and examples (they're large)
+prune a2a-samples
+prune examples
+prune coverpage
+
+# Exclude logs and cache
+prune logs
+prune context_cache
+prune .sensitive_backup
+
+# Exclude build artifacts
+prune dist
+prune build
+prune *.egg-info
+
+# Exclude large binary files
+exclude *.zip
+exclude *.bin
+exclude *.pth
+exclude *.onnx
+exclude *.pt
+
+# Exclude documentation reports (many duplicate MD files)
+exclude *_REPORT.md
+exclude *_SUMMARY.md
+exclude *_FIXES.md
+exclude *_STATUS.md
+exclude *_COMPLETE.md
+exclude *_GUIDE.md
+exclude DEPLOYMENT_STATUS.md
+exclude STARTUP_COMPLETE_SUMMARY.md
+exclude SERVER_STATUS_SUMMARY.md
+
+# Exclude backup files
+exclude *.backup
+exclude *.bak
+exclude *~
+
+# Exclude data files
+exclude *.json
+include config/*.json
+include model_configs/*.json
+exclude chat_history*.json
+exclude audit_history*.json
+exclude security_report*.json
+
+# Exclude workspace and temporary files
+prune workspace
+prune uv
+exclude trace_output.txt
+exclude user_language_preference.txt
