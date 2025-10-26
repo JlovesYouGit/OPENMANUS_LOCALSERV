@@ -1,0 +1,84 @@
+2025-10-23 14:53:00.593 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 14:53:03.467 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://thebrieflab.com/blog/the-3-cs-of-communication-clear-concise-consistent/: HTTP 403
+2025-10-23 14:53:03.561 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.sciencedirect.com/science/article/pii/S2949916X23000464: HTTP 403
+2025-10-23 14:53:06.947 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 14:53:45.831 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:12:44.626 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:12:48.205 | ERROR    | app.agent.manus:_get_current_information:461 - Error getting current information: RetryError[<Future at 0x23a533aaad0 state=finished raised DuckDuckGoSearchException>]
+2025-10-23 15:12:48.206 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:14:17.483 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:14:37.724 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:14:39.296 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://finance.yahoo.com/quote/AAPL/: HTTP 429
+2025-10-23 15:14:39.477 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.marketwatch.com/investing/stock/aapl: HTTP 401
+2025-10-23 15:14:39.481 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://es.investing.com/equities/apple-computer-inc: HTTP 403
+2025-10-23 15:15:02.981 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:15:03.477 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Google...
+2025-10-23 15:15:04.299 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Baidu...
+2025-10-23 15:15:06.462 | WARNING  | app.tool.web_search:fetch_content:152 - Error fetching content from /s?wd=nvda%20stock%20price&usm=2&ie=utf-8&rsv_pq=efa7b42a00200584&oq=NVDA%20Nvidia%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance&rsv_t=93b0tdQPc0IWdurSObbSQzGUZaLP9Az7D3o2jM1XpBFE9eOYv5%2FHBPyTllI&rsf=101633403&rsv_dl=0_prs_28608_1: Invalid URL '/s?wd=nvda%20stock%20price&usm=2&ie=utf-8&rsv_pq=efa7b42a00200584&oq=NVDA%20Nvidia%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance&rsv_t=93b0tdQPc0IWdurSObbSQzGUZaLP9Az7D3o2jM1XpBFE9eOYv5%2FHBPyTllI&rsf=101633403&rsv_dl=0_prs_28608_1': No scheme supplied. Perhaps you meant https:///s?wd=nvda%20stock%20price&usm=2&ie=utf-8&rsv_pq=efa7b42a00200584&oq=NVDA%20Nvidia%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance&rsv_t=93b0tdQPc0IWdurSObbSQzGUZaLP9Az7D3o2jM1XpBFE9eOYv5%2FHBPyTllI&rsf=101633403&rsv_dl=0_prs_28608_1?
+2025-10-23 15:15:08.064 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from http://www.baidu.com/link?url=SMGFiqRuIzvhU2Leq9V9GWqBYhUyP1fWebsfjC_S4dwuaQW1mhFbkem7-tXQ6_8i: HTTP 403
+2025-10-23 15:15:08.188 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from http://www.baidu.com/link?url=ZXKnxYkZRf7ojE_309B-oMcWEPTqvRNqoIdXhJLFzlTyCeMke2BM5UNKrAUH1SFBt4dbJBZEFlu8U4ynMUrqA_: HTTP 403
+2025-10-23 15:15:18.089 | WARNING  | app.tool.web_search:fetch_content:152 - Error fetching content from http://www.baidu.com/link?url=I0FBw9_8ZLFLCQa0pIJIZyrmtwo0VnqA-W5uSt9Rnf1eBjkvsUiy-b1ixi1ZZ7hUfcsjKmB6wb2690h-aIzYqt4UYCJcOlUPYJnwsuEbPNr9WTX0eAnisf3h9r5OWS6V3cYBd2Q91opcwE2kj3YPTkjP1Th33NpTTMjAq-rIqMW: HTTPSConnectionPool(host='www.nasdaq.com', port=443): Read timed out. (read timeout=10)
+2025-10-23 15:15:51.208 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:15:51.575 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Google...
+2025-10-23 15:15:52.109 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Baidu...
+2025-10-23 15:15:52.918 | WARNING  | app.tool.web_search:fetch_content:152 - Error fetching content from /s?wd=apple%20stock%20price&usm=1&ie=utf-8&rsv_pq=eb0e95e200540655&oq=Apple%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Google&rsv_t=277ei%2B9V391j8gPVCYmg9Ljp%2B8nnqe84qPH%2Byt8jt4YLv9IumNd4ndgbCl4&rsf=101633403&rsv_dl=0_prs_28608_1: Invalid URL '/s?wd=apple%20stock%20price&usm=1&ie=utf-8&rsv_pq=eb0e95e200540655&oq=Apple%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Google&rsv_t=277ei%2B9V391j8gPVCYmg9Ljp%2B8nnqe84qPH%2Byt8jt4YLv9IumNd4ndgbCl4&rsf=101633403&rsv_dl=0_prs_28608_1': No scheme supplied. Perhaps you meant https:///s?wd=apple%20stock%20price&usm=1&ie=utf-8&rsv_pq=eb0e95e200540655&oq=Apple%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Google&rsv_t=277ei%2B9V391j8gPVCYmg9Ljp%2B8nnqe84qPH%2Byt8jt4YLv9IumNd4ndgbCl4&rsf=101633403&rsv_dl=0_prs_28608_1?
+2025-10-23 15:15:54.259 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from http://www.baidu.com/link?url=Pq0fAGuwjSf-IG3icAKfOloCVLI_v_1CK4dZOU2Ij3xtujELi-FdGkwt5MkeHA12isXhEOqHMoUe54siF3d72q: HTTP 403
+2025-10-23 15:16:04.238 | WARNING  | app.tool.web_search:fetch_content:152 - Error fetching content from http://www.baidu.com/link?url=wPDwjhqRP9JGPQgwgq-Vs8Ho92dkVKPqsDZHSdVRHFx79uRB-bciKo5cHiVZQLsn0QOtpzON8yEtWaj3AavPi6q-ydcnJJVvLtvsGUNu3Xa: HTTPSConnectionPool(host='www.nasdaq.com', port=443): Read timed out. (read timeout=10)
+2025-10-23 15:16:04.253 | WARNING  | app.tool.web_search:fetch_content:152 - Error fetching content from http://www.baidu.com/link?url=saJnPPrHvmV2UVq9FRi9pEL-VFmVfvuWwDtV1hb9cFeXK9F0kpq4N6TvqykjoLiD: HTTPSConnectionPool(host='www.nasdaq.com', port=443): Read timed out. (read timeout=10)
+2025-10-23 15:16:04.254 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:16:23.586 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:17:02.844 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:17:35.138 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:17:35.474 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Google...
+2025-10-23 15:17:36.022 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Baidu...
+2025-10-23 15:17:38.446 | WARNING  | app.tool.web_search:fetch_content:152 - Error fetching content from /s?wd=Stock%20market&usm=3&ie=utf-8&rsv_pq=cb8f09120050739e&oq=Microsoft%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Go&rsv_t=2710iYZp84ofcTvSTKNCb4H7j1KeRJFYYTzGnG8B6BqfJ%2Btbvfg58CfnCkM&rsf=101631202&rsv_dl=0_prs_28608_1: Invalid URL '/s?wd=Stock%20market&usm=3&ie=utf-8&rsv_pq=cb8f09120050739e&oq=Microsoft%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Go&rsv_t=2710iYZp84ofcTvSTKNCb4H7j1KeRJFYYTzGnG8B6BqfJ%2Btbvfg58CfnCkM&rsf=101631202&rsv_dl=0_prs_28608_1': No scheme supplied. Perhaps you meant https:///s?wd=Stock%20market&usm=3&ie=utf-8&rsv_pq=cb8f09120050739e&oq=Microsoft%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Go&rsv_t=2710iYZp84ofcTvSTKNCb4H7j1KeRJFYYTzGnG8B6BqfJ%2Btbvfg58CfnCkM&rsf=101631202&rsv_dl=0_prs_28608_1?
+2025-10-23 15:17:39.776 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from http://www.baidu.com/link?url=7gBTT6-9N15EjkhwdgQUr5xZdCnUTLmZded6VrQr5jcqYx1eu3Jom_60V3Ca7czw: HTTP 403
+2025-10-23 15:17:42.101 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:20:28.971 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:20:30.805 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/1927863148146320421: HTTP 403
+2025-10-23 15:20:30.812 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/667439417: HTTP 403
+2025-10-23 15:20:30.818 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/8239136687: HTTP 403
+2025-10-23 15:20:30.842 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/663057303: HTTP 403
+2025-10-23 15:20:30.847 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/564794300: HTTP 403
+2025-10-23 15:20:30.859 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/645585457: HTTP 403
+2025-10-23 15:20:30.862 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/446328791: HTTP 403
+2025-10-23 15:20:31.628 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:46:15.260 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:46:16.898 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/8239136687: HTTP 403
+2025-10-23 15:46:16.945 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/446328791: HTTP 403
+2025-10-23 15:46:16.947 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/663057303: HTTP 403
+2025-10-23 15:46:16.960 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/667439417: HTTP 403
+2025-10-23 15:46:16.975 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/1927863148146320421: HTTP 403
+2025-10-23 15:46:16.989 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/564794300: HTTP 403
+2025-10-23 15:46:17.056 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/645585457: HTTP 403
+2025-10-23 15:46:17.756 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:46:26.676 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:46:28.468 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/663057303: HTTP 403
+2025-10-23 15:46:28.472 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/564794300: HTTP 403
+2025-10-23 15:46:28.487 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/8239136687: HTTP 403
+2025-10-23 15:46:28.499 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/446328791: HTTP 403
+2025-10-23 15:46:28.515 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/645585457: HTTP 403
+2025-10-23 15:46:28.516 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/667439417: HTTP 403
+2025-10-23 15:46:28.549 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/1927863148146320421: HTTP 403
+2025-10-23 15:46:28.968 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:46:37.539 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:46:42.770 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/667439417: HTTP 403
+2025-10-23 15:46:42.789 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/8239136687: HTTP 403
+2025-10-23 15:46:42.794 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/446328791: HTTP 403
+2025-10-23 15:46:42.829 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/645585457: HTTP 403
+2025-10-23 15:46:43.623 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:54:12.892 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:54:14.706 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/1927863148146320421: HTTP 403
+2025-10-23 15:54:14.751 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/8239136687: HTTP 403
+2025-10-23 15:54:14.752 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/564794300: HTTP 403
+2025-10-23 15:54:14.754 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/446328791: HTTP 403
+2025-10-23 15:54:14.759 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/663057303: HTTP 403
+2025-10-23 15:54:14.798 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/645585457: HTTP 403
+2025-10-23 15:54:14.830 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from https://www.zhihu.com/question/667439417: HTTP 403
+2025-10-23 15:54:15.312 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:54:44.053 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:54:44.512 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Google...
+2025-10-23 15:54:45.074 | INFO     | app.tool.web_search:_try_all_engines:299 - 🔎 Attempting search with Baidu...
+2025-10-23 15:54:46.921 | WARNING  | app.tool.web_search:fetch_content:152 - Error fetching content from /s?wd=Stock%20market&usm=3&ie=utf-8&rsv_pq=a7c5781e0026a2d0&oq=Microsoft%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Go&rsv_t=8752cyRezkQlzzaza5JqK0v7e2ZWkY%2BX%2BJmE65ZHu6%2BWVU%2F2LqcqSkbzGSg&rsf=101631202&rsv_dl=0_prs_28608_1: Invalid URL '/s?wd=Stock%20market&usm=3&ie=utf-8&rsv_pq=a7c5781e0026a2d0&oq=Microsoft%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Go&rsv_t=8752cyRezkQlzzaza5JqK0v7e2ZWkY%2BX%2BJmE65ZHu6%2BWVU%2F2LqcqSkbzGSg&rsf=101631202&rsv_dl=0_prs_28608_1': No scheme supplied. Perhaps you meant https:///s?wd=Stock%20market&usm=3&ie=utf-8&rsv_pq=a7c5781e0026a2d0&oq=Microsoft%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Go&rsv_t=8752cyRezkQlzzaza5JqK0v7e2ZWkY%2BX%2BJmE65ZHu6%2BWVU%2F2LqcqSkbzGSg&rsf=101631202&rsv_dl=0_prs_28608_1?
+2025-10-23 15:54:48.230 | WARNING  | app.tool.web_search:fetch_content:132 - Failed to fetch content from http://www.baidu.com/link?url=zI81tABqUWbnMGY8Jwcml5T2yn5XvFlsDEtgXtk1f4Jw8nThpsW9YT8LxTpR2rqJ: HTTP 403
+2025-10-23 15:54:49.831 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers

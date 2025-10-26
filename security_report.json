@@ -1,0 +1,74 @@
+{
+  "total_findings": 3,
+  "findings_by_type": {
+    "api_keys": 1,
+    "tokens": 1,
+    "passwords": 1
+  },
+  "findings_by_file": {
+    ".\\SECURITY_IMPLEMENTATION_SUMMARY.md": [
+      {
+        "file": ".\\SECURITY_IMPLEMENTATION_SUMMARY.md",
+        "pattern": "api_keys",
+        "line": 66,
+        "match": "api_key = \"YOUR_OPENAI_API_KEY_HERE\"",
+        "position": [
+          2697,
+          2733
+        ]
+      },
+      {
+        "file": ".\\SECURITY_IMPLEMENTATION_SUMMARY.md",
+        "pattern": "tokens",
+        "line": 65,
+        "match": "token = \"YOUR_HF_TOKEN_HERE\"",
+        "position": [
+          2605,
+          2633
+        ]
+      },
+      {
+        "file": ".\\SECURITY_IMPLEMENTATION_SUMMARY.md",
+        "pattern": "passwords",
+        "line": 62,
+        "match": "password=\"123456\"",
+        "position": [
+          2472,
+          2489
+        ]
+      }
+    ]
+  },
+  "detailed_findings": [
+    {
+      "file": ".\\SECURITY_IMPLEMENTATION_SUMMARY.md",
+      "pattern": "api_keys",
+      "line": 66,
+      "match": "api_key = \"YOUR_OPENAI_API_KEY_HERE\"",
+      "position": [
+        2697,
+        2733
+      ]
+    },
+    {
+      "file": ".\\SECURITY_IMPLEMENTATION_SUMMARY.md",
+      "pattern": "tokens",
+      "line": 65,
+      "match": "token = \"YOUR_HF_TOKEN_HERE\"",
+      "position": [
+        2605,
+        2633
+      ]
+    },
+    {
+      "file": ".\\SECURITY_IMPLEMENTATION_SUMMARY.md",
+      "pattern": "passwords",
+      "line": 62,
+      "match": "password=\"123456\"",
+      "position": [
+        2472,
+        2489
+      ]
+    }
+  ]
+}

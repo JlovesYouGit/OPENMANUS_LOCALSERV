@@ -1,0 +1,100 @@
+# Global LLM configuration - Using local lightweight models
+[llm]
+model = "local"                                # Using local model
+base_url = "http://localhost:8000/v1"          # Local inference server
+api_key = "dummy-key"                          # Not used for local models
+max_tokens = 2048                              # Maximum number of tokens in the response
+temperature = 0.7                              # Controls randomness
+
+# Local model configuration for lightweight tasks (TinyLlama - optimized version)
+[llm.lightweight]
+model_path = "./models/tinyllama"
+model_type = "tinyllama"
+max_tokens = 1024
+temperature = 0.5
+
+# Local model configuration for higher reasoning (Qwen2-0.5B - much lighter than Phi-3)
+[llm.reasoning]
+model_path = "./models/qwen2-0.5b"
+model_type = "qwen2"
+max_tokens = 1536
+temperature = 0.7
+
+# Optional configuration for specific LLM models
+[llm.vision]
+model = "local"                                # Using local model
+base_url = "http://localhost:8000/v1"          # Local inference server
+api_key = "dummy-key"                          # Not used for local models
+max_tokens = 2048                              # Maximum number of tokens in the response
+temperature = 0.7                              # Controls randomness
+
+# Daytona configuration (dummy values to satisfy requirements)
+[daytona]
+daytona_api_key = "dummy_key_for_testing"
+daytona_server_url = "https://app.daytona.io/api"
+daytona_target = "us"
+
+# Optional configuration for specific browser configuration
+# [browser]
+# Whether to run browser in headless mode (default: false)
+#headless = false
+# Disable browser security features (default: true)
+#disable_security = true
+# Extra arguments to pass to the browser
+#extra_chromium_args = []
+# Path to a Chrome instance to use to connect to your normal browser
+# e.g. '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+#chrome_instance_path = ""
+# Connect to a browser instance via WebSocket
+#wss_url = ""
+# Connect to a browser instance via CDP
+#cdp_url = ""
+
+# Optional configuration, Proxy settings for the browser
+# [browser.proxy]
+# server = "http://proxy-server:port"
+# username = "proxy-username"
+# password = "proxy-password"
+
+# Search settings - Enable for current information retrieval
+[search]
+# Search engine for agent to use. Default is "Google", can be set to "Baidu" or "DuckDuckGo" or "Bing".
+engine = "DuckDuckGo"
+# Fallback engine order. Default is ["DuckDuckGo", "Baidu", "Bing"] - will try in this order after primary engine fails.
+fallback_engines = ["Google", "Baidu", "Bing"]
+# Seconds to wait before retrying all engines again when they all fail due to rate limits. Default is 60.
+retry_delay = 30
+# Maximum number of times to retry all engines when all fail. Default is 3.
+max_retries = 2
+# Language code for search results. Options: "en" (English), "zh" (Chinese), etc.
+lang = "en"
+# Country code for search results. Options: "us" (United States), "cn" (China), etc.
+country = "us"
+
+## Sandbox configuration
+#[sandbox]
+#use_sandbox = false
+#image = "python:3.12-slim"
+#work_dir = "/workspace"
+#memory_limit = "1g"  # 512m
+#cpu_limit = 2.0
+#timeout = 300
+#network_enabled = true
+
+# MCP (Model Context Protocol) configuration
+[mcp]
+server_reference = "app.mcp.server" # default server module reference
+
+# Optional Runflow configuration
+# Your can add additional agents into run-flow workflow to solve different-type tasks.
+[runflow]
+use_data_analysis_agent = false     # The Data Analysis Agent to solve various data analysis tasks
+
+# Local model server configuration
+[model_server]
+host = "localhost"
+port = 8000
+# Model routing configuration
+[model_routing]
+lightweight_agent = "tinyllama"    # Use TinyLlama for lightweight tasks
+reasoning_agent = "qwen2"          # Use Qwen2-0.5B for complex reasoning

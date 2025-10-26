@@ -1,0 +1,142 @@
+# Security Guidelines for OpenManus Repository
+
+This document outlines security best practices and procedures for the OpenManus repository to protect sensitive information and prevent accidental exposure.
+
+## 🔒 Sensitive Information Protection
+
+### What Constitutes Sensitive Information?
+
+Sensitive information includes but is not limited to:
+- API keys and tokens (Hugging Face, OpenAI, etc.)
+- Passwords and credentials
+- Private keys and certificates
+- Database connection strings
+- Personal identification information (PII)
+- Chat history and user data
+- Configuration files with secrets
+- Environment files (.env)
+
+### Protection Mechanisms
+
+1. **.gitignore Configuration**
+   - All sensitive files are automatically added to `.gitignore`
+   - Sensitive files are backed up to `.sensitive_backup/` directory
+   - The backup directory is also added to `.gitignore`
+
+2. **Automated Scanning**
+   - `protect_repo.py` identifies and protects sensitive files
+   - `security_check.py` scans for hardcoded sensitive information
+   - Pre-commit hooks prevent accidental commits of sensitive data
+
+3. **Redaction Process**
+   - Hardcoded secrets are automatically redacted
+   - Backups are created before any modifications
+   - Redacted content is replaced with `[REDACTED]` markers
+
+## 🛡️ Best Practices
+
+### Environment Variables
+Store all sensitive information in environment variables:
+```bash
+# In .env file (protected by .gitignore)
+HF_TOKEN=your_huggingface_token_here
+OPENAI_API_KEY=your_openai_api_key_here
+DATABASE_URL=your_database_connection_string
+```
+
+In your code:
+```python
+import os
+hf_token = os.getenv('HF_TOKEN')
+openai_key = os.getenv('OPENAI_API_KEY')
+```
+
+### Configuration Files
+Use template configuration files:
+```bash
+# config.example.toml - committed to repository
+hf_token = "YOUR_HF_TOKEN_HERE"
+openai_api_key = "YOUR_OPENAI_API_KEY_HERE"
+
+# config.toml - added to .gitignore
+hf_token = "actual_token_here"
+openai_api_key = "actual_api_key_here"
+```
+
+### Git Hooks
+Pre-commit hooks automatically scan for sensitive information:
+```bash
+# Install pre-commit hook
+python security_check.py --setup-hook
+```
+
+## 📋 Security Checklist
+
+Before committing code, verify:
+
+- [ ] No API keys or tokens are hardcoded
+- [ ] No passwords are in plain text
+- [ ] All sensitive files are in `.gitignore`
+- [ ] Environment variables are used for secrets
+- [ ] Configuration templates are used instead of actual configs
+- [ ] Pre-commit hooks are installed and functioning
+
+## 🚨 Incident Response
+
+If sensitive information is accidentally committed:
+
+1. **Immediately revoke the exposed credentials**
+2. **Run the security check script**:
+   ```bash
+   python security_check.py --redact
+   ```
+3. **Review the security report**:
+   ```bash
+   cat security_report.json
+   ```
+4. **Commit the redacted changes**
+5. **Notify relevant parties about the exposure**
+
+## 🔍 Regular Security Audits
+
+Perform regular security audits using:
+```bash
+# Full security scan
+python security_check.py
+
+# Redact sensitive data automatically
+python security_check.py --redact
+
+# Setup pre-commit hook
+python security_check.py --setup-hook
+```
+
+## 📁 Protected Directories and Files
+
+The following directories and files are automatically protected:
+
+```
+.sensitive_backup/        # Backup of sensitive files
+.env                      # Environment variables
+chat_history.json         # User chat history
+*.log                     # Log files
+*.cache                   # Cache files
+models/                   # Model files (may contain sensitive data)
+huggingface_cache/        # Hugging Face cache
+```
+
+## 🤖 Automated Protection
+
+The repository includes automated protection mechanisms:
+
+1. **protect_repo.py**: Identifies and protects sensitive files
+2. **security_check.py**: Scans for hardcoded sensitive information
+3. **Pre-commit hooks**: Prevent accidental commits of sensitive data
+
+## 📞 Contact
+
+For security concerns, contact the repository maintainers or file an issue.
+
+---
+
+*Last updated: October 25, 2025*

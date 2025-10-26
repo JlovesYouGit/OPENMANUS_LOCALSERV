@@ -1,0 +1,27 @@
+[
+  {
+    "task": "Search for current stock prices",
+    "solution": "I need to use the web_search tool to find current stock prices.",
+    "explanation": "For current information requests, I should use the web_search tool with appropriate query parameters."
+  },
+  {
+    "task": "Create a Python script to calculate fibonacci numbers",
+    "solution": "I'll create a Python script to calculate fibonacci numbers using the python_execute tool.",
+    "explanation": "For computational tasks, I should use the python_execute tool with proper Python code."
+  },
+  {
+    "task": "Create a new file with system information",
+    "solution": "I'll create a new file with system information using the str_replace_editor tool.",
+    "explanation": "For file creation tasks, I should use the str_replace_editor tool with the create command."
+  },
+  {
+    "task": "Browse to a website and extract information",
+    "solution": "I'll use the browser_use tool to navigate to a website and extract information.",
+    "explanation": "For web browsing tasks, I should use the browser_use tool with appropriate actions."
+  },
+  {
+    "task": "Plan a multi-step task to analyze data",
+    "solution": "I need to plan a multi-step approach to analyze data. First, I should identify what data needs to be analyzed. Then, I should determine what tools are available for analysis. Finally, I should create a step-by-step plan.",
+    "explanation": "For complex tasks, I should use the planning tool to break them down into manageable steps."
+  }
+]

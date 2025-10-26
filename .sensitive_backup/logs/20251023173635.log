@@ -1,0 +1,6 @@
+2025-10-23 17:37:22.797 | INFO     | app.tool.web_search:_try_all_engines:311 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 17:37:23.919 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from https://finance.yahoo.com/quote/AAPL/news/: HTTP 429
+2025-10-23 17:37:23.945 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from https://es.finance.yahoo.com/quote/AAPL/: HTTP 429
+2025-10-23 17:37:23.977 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from https://finance.yahoo.com/quote/AAPL/: HTTP 429
+2025-10-23 17:37:23.979 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from https://hk.finance.yahoo.com/quote/AAPL/: HTTP 429
+2025-10-23 17:37:24.009 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from https://uk.finance.yahoo.com/quote/AAPL/: HTTP 429

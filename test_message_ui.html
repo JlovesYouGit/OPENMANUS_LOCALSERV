@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message Sending Test</title>
+    <style>
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; }
+        .chat-history { border: 1px solid #ccc; height: 300px; overflow-y: auto; padding: 10px; margin-bottom: 10px; }
+        .message { padding: 10px; margin: 5px 0; border-radius: 5px; max-width: 80%; }
+        .user-message { background-color: #007bff; color: white; margin-left: auto; }
+        .agent-message { background-color: #f8f9fa; border: 1px solid #dee2e6; }
+        .input-area { display: flex; gap: 10px; }
+        #user-input { flex: 1; padding: 10px; }
+        #send-button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        #send-button:disabled { background-color: #6c757d; }
+        .loading { display: none; color: #007bff; }
+        .status { padding: 10px; text-align: center; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Message Sending Test</h1>
+        <div class="status" id="status">Ready</div>
+        <div class="chat-history" id="chat-history"></div>
+        <div class="loading" id="loading">Processing...</div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message here...">
+            <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Add message to chat history
+        function addMessage(content, isUser) {
+            const chatHistory = document.getElementById('chat-history');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'agent-message'}`;
+            messageDiv.textContent = content;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // Show loading indicator
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('send-button').disabled = true;
+        }
+        
+        // Hide loading indicator
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('send-button').disabled = false;
+        }
+        
+        // Update status message
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'status error' : 'status';
+        }
+        
+        // OLD (problematic) sendMessage function
+        function oldSendMessage() {
+            const inputElement = document.getElementById('user-input');
+            const message = inputElement.value.trim();
+            
+            if (!message) return;
+            
+            // PROBLEM: Message is added to UI BEFORE sending to backend
+            addMessage(message, true);
+            inputElement.value = '';
+            
+            showLoading();
+            updateStatus('Processing your request...');
+            
+            // Simulate network request
+            setTimeout(() => {
+                try {
+                    // Simulate random failure
+                    if (Math.random() < 0.3) {
+                        throw new Error("Network error");
+                    }
+                    
+                    // Simulate success
+                    const response = { success: true, response: `Echo: ${message}` };
+                    
+                    if (response.success) {
+                        addMessage(response.response, false);
+                        updateStatus('Response received');
+                    } else {
+                        addMessage(`Error: ${response.error}`, false);
+                        updateStatus('Error occurred', true);
+                    }
+                } catch (error) {
+                    addMessage(`Error: ${error.message}`, false);
+                    updateStatus('Network error', true);
+                    // PROBLEM: Message is already cleared from input, user can't retry
+                } finally {
+                    hideLoading();
+                }
+            }, 1000);
+        }
+        
+        // NEW (fixed) sendMessage function
+        function sendMessage() {
+            const inputElement = document.getElementById('user-input');
+            const message = inputElement.value.trim();
+            
+            if (!message) return;
+            
+            showLoading();
+            updateStatus('Processing your request...');
+            
+            // Simulate network request
+            setTimeout(() => {
+                try {
+                    // Simulate random failure
+                    if (Math.random() < 0.3) {
+                        throw new Error("Network error");
+                    }
+                    
+                    // Simulate success
+                    const response = { success: true, response: `Echo: ${message}` };
+                    
+                    if (response.success) {
+                        // FIX: Only add user message after successful submission
+                        addMessage(message, true);
+                        inputElement.value = '';
+                        
+                        addMessage(response.response, false);
+                        updateStatus('Response received');
+                    } else {
+                        addMessage(`Error: ${response.error}`, false);
+                        updateStatus('Error occurred', true);
+                        // Clear input only if it was a validation error
+                        if (response.error !== "No message provided") {
+                            inputElement.value = '';
+                        }
+                    }
+                } catch (error) {
+                    addMessage(`Error: ${error.message}`, false);
+                    updateStatus('Network error', true);
+                    // FIX: Don't clear the input on network errors so user can retry
+                } finally {
+                    hideLoading();
+                }
+            }, 1000);
+        }
+        
+        // Handle Enter key press
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Add test buttons
+        window.onload = function() {
+            const container = document.querySelector('.container');
+            
+            const testButtons = document.createElement('div');
+            testButtons.innerHTML = `
+                <div style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+                    <h3>Test Scenarios</h3>
+                    <button onclick="testNetworkError()">Test Network Error</button>
+                    <button onclick="testBackendError()">Test Backend Error</button>
+                    <button onclick="testSuccess()">Test Success</button>
+                    <button onclick="clearChat()">Clear Chat</button>
+                </div>
+            `;
+            container.appendChild(testButtons);
+        };
+        
+        // Test functions
+        function testNetworkError() {
+            // Override sendMessage to simulate network error
+            const originalSendMessage = sendMessage;
+            window.sendMessage = function() {
+                const inputElement = document.getElementById('user-input');
+                const message = inputElement.value.trim();
+                
+                if (!message) return;
+                
+                showLoading();
+                updateStatus('Processing your request...');
+                
+                setTimeout(() => {
+                    addMessage(`Error: Network error`, false);
+                    updateStatus('Network error', true);
+                    hideLoading();
+                }, 500);
+            };
+            
+            // Set a test message and trigger send
+            document.getElementById('user-input').value = "Test network error message";
+            sendMessage();
+            
+            // Restore original function
+            setTimeout(() => {
+                window.sendMessage = originalSendMessage;
+            }, 1000);
+        }
+        
+        function testBackendError() {
+            // Override sendMessage to simulate backend error
+            const originalSendMessage = sendMessage;
+            window.sendMessage = function() {
+                const inputElement = document.getElementById('user-input');
+                const message = inputElement.value.trim();
+                
+                if (!message) return;
+                
+                showLoading();
+                updateStatus('Processing your request...');
+                
+                setTimeout(() => {
+                    addMessage(`Error: Internal server error`, false);
+                    updateStatus('Error occurred', true);
+                    inputElement.value = ''; // Clear on backend error
+                    hideLoading();
+                }, 500);
+            };
+            
+            // Set a test message and trigger send
+            document.getElementById('user-input').value = "Test backend error message";
+            sendMessage();
+            
+            // Restore original function
+            setTimeout(() => {
+                window.sendMessage = originalSendMessage;
+            }, 1000);
+        }
+        
+        function testSuccess() {
+            // Override sendMessage to simulate success
+            const originalSendMessage = sendMessage;
+            window.sendMessage = function() {
+                const inputElement = document.getElementById('user-input');
+                const message = inputElement.value.trim();
+                
+                if (!message) return;
+                
+                showLoading();
+                updateStatus('Processing your request...');
+                
+                setTimeout(() => {
+                    addMessage(message, true);
+                    inputElement.value = '';
+                    addMessage(`Echo: ${message}`, false);
+                    updateStatus('Response received');
+                    hideLoading();
+                }, 500);
+            };
+            
+            // Set a test message and trigger send
+            document.getElementById('user-input').value = "Test success message";
+            sendMessage();
+            
+            // Restore original function
+            setTimeout(() => {
+                window.sendMessage = originalSendMessage;
+            }, 1000);
+        }
+        
+        function clearChat() {
+            document.getElementById('chat-history').innerHTML = '';
+            document.getElementById('user-input').value = '';
+            updateStatus('Ready');
+        }
+    </script>
+</body>
+</html>

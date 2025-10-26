@@ -1,0 +1,20 @@
+2025-10-23 15:57:20.490 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:57:27.770 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:57:38.466 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:57:48.503 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:57:58.520 | INFO     | app.tool.web_search:_try_all_engines:311 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:58:04.320 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:58:14.807 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:58:26.536 | INFO     | app.tool.web_search:_try_all_engines:311 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:58:27.195 | INFO     | app.tool.web_search:_try_all_engines:311 - 🔎 Attempting search with Google...
+2025-10-23 15:58:27.789 | INFO     | app.tool.web_search:_try_all_engines:311 - 🔎 Attempting search with Baidu...
+2025-10-23 15:58:29.727 | WARNING  | app.tool.web_search:fetch_content:153 - Error fetching content from /s?wd=Stock%20market&usm=1&ie=utf-8&rsv_pq=d669a85d006a4aa6&oq=s%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Google%20Fin&rsv_t=9661zcCWs0ztzsFxECgiACqoGEq8H%2BUXP4gstb4hAU1qUzLXa3jSLYtHqq8&rsf=101631202&rsv_dl=0_prs_28608_1: Invalid URL '/s?wd=Stock%20market&usm=1&ie=utf-8&rsv_pq=d669a85d006a4aa6&oq=s%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Google%20Fin&rsv_t=9661zcCWs0ztzsFxECgiACqoGEq8H%2BUXP4gstb4hAU1qUzLXa3jSLYtHqq8&rsf=101631202&rsv_dl=0_prs_28608_1': No scheme supplied. Perhaps you meant https:///s?wd=Stock%20market&usm=1&ie=utf-8&rsv_pq=d669a85d006a4aa6&oq=s%20stock%20price%20today%202025-10-23%20current%20market%20price%20Yahoo%20Finance%20Google%20Fin&rsv_t=9661zcCWs0ztzsFxECgiACqoGEq8H%2BUXP4gstb4hAU1qUzLXa3jSLYtHqq8&rsf=101631202&rsv_dl=0_prs_28608_1?
+2025-10-23 15:58:31.680 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from http://www.baidu.com/link?url=IGHOr9KleaRnMflPZt4GP65zKezTE703rXMVBTgvZNO: HTTP 404
+2025-10-23 15:58:40.992 | WARNING  | app.tool.web_search:fetch_content:153 - Error fetching content from http://www.baidu.com/link?url=9hteRPWX7d_cPmZkWeV0JJ8mfXbNyNznQbo2MSz-D1_AKDYm0FCL-SAY1cC3im5nlUvkGr_pM5lusUFiLZxl2P1EgWtQmbMOikO4Os6fmjC: HTTPSConnectionPool(host='www.nasdaq.com', port=443): Read timed out. (read timeout=10)
+2025-10-23 15:58:40.996 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:59:17.107 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:59:23.520 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers
+2025-10-23 15:59:27.653 | INFO     | app.tool.web_search:_try_all_engines:311 - 🔎 Attempting search with Duckduckgo...
+2025-10-23 15:59:28.878 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from https://www.rae.es/dpd/s: HTTP 403
+2025-10-23 15:59:29.033 | WARNING  | app.tool.web_search:fetch_content:133 - Failed to fetch content from https://es.wikipedia.org/wiki/S: HTTP 403
+2025-10-23 15:59:29.693 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers

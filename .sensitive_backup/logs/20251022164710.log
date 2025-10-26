@@ -1,0 +1,15 @@
+2025-10-22 16:47:17.256 | WARNING  | __main__:main:25 - Processing your request...
+2025-10-22 16:47:17.257 | INFO     | app.agent.base:run:140 - Executing step 1/20
+2025-10-22 16:47:25.939 | ERROR    | app.llm:ask_tool:756 - OpenAI API error: Connection error.
+2025-10-22 16:47:25.940 | ERROR    | app.llm:ask_tool:762 - API error: Connection error.
+2025-10-22 16:47:35.097 | ERROR    | app.llm:ask_tool:756 - OpenAI API error: Connection error.
+2025-10-22 16:47:35.098 | ERROR    | app.llm:ask_tool:762 - API error: Connection error.
+2025-10-22 16:47:44.576 | ERROR    | app.llm:ask_tool:756 - OpenAI API error: Connection error.
+2025-10-22 16:47:44.577 | ERROR    | app.llm:ask_tool:762 - API error: Connection error.
+2025-10-22 16:47:56.660 | ERROR    | app.llm:ask_tool:756 - OpenAI API error: Connection error.
+2025-10-22 16:47:56.661 | ERROR    | app.llm:ask_tool:762 - API error: Connection error.
+2025-10-22 16:48:11.769 | ERROR    | app.llm:ask_tool:756 - OpenAI API error: Connection error.
+2025-10-22 16:48:11.769 | ERROR    | app.llm:ask_tool:762 - API error: Connection error.
+2025-10-22 16:48:24.901 | ERROR    | app.llm:ask_tool:756 - OpenAI API error: Connection error.
+2025-10-22 16:48:24.901 | ERROR    | app.llm:ask_tool:762 - API error: Connection error.
+2025-10-22 16:48:24.901 | INFO     | app.tool.mcp:disconnect:194 - Disconnected from all MCP servers

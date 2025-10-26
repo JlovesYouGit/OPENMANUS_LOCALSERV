@@ -1,0 +1,814 @@
+"""
+VLLM Optimized Local Model Handler for OpenManus
+This module manages local LLM inference with GPU acceleration using VLLM for better performance.
+If VLLM is not available or CUDA is not available, it falls back to DirectML or CPU-based inference.
+"""
+
+import os
+import json
+import hashlib
+from typing import Dict, List, Any, Optional
+import asyncio
+import logging
+import gc
+import psutil
+import numpy as np
+from PIL import Image
+
+# Defer heavy imports until needed
+# Try to import VLLM with error handling - moved to class initialization
+VLLM_AVAILABLE = False
+VLLM_CUDA_AVAILABLE = False
+
+# Define placeholders for VLLM classes
+LLM = None
+SamplingParams = None
+
+# Try to import DirectML as fallback - moved to class initialization
+DML_AVAILABLE = False
+torch_directml = None
+
+# Defer other heavy imports until needed
+# from transformers import AutoTokenizer, AutoModelForCausalLM
+AutoTokenizer = None
+AutoModelForCausalLM = None
+
+# Performance monitoring
+from app.utils.performance_monitor import start_request_timer, end_request_timer
+
+logger = logging.getLogger(__name__)
+
+# System optimizations
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
+# Context cache directory
+CONTEXT_CACHE_DIR = "./context_cache"
+os.makedirs(CONTEXT_CACHE_DIR, exist_ok=True)
+
+# Model loading optimization: Pre-load lightweight model for faster responses
+MODEL_PRELOAD_STRATEGY = "lightweight_only"  # Options: "none", "lightweight_only", "both"
+
+# KV Cache optimization for VLLM
+KV_CACHE_ENABLED = True
+KV_CACHE_MAX_ENTRIES = 1000
+
+class VLLMOptimizedHandler:
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize the VLLM optimized handler with configuration.
+        
+        Args:
+            config: Configuration dictionary containing model paths and settings
+        """
+        self.config = config
+        self.models = {}
+        self.tokenizers = {}
+        self.model_loaded = {}  # Track which models are loaded
+        self.context_cache = {}  # In-memory cache for quick access
+        self.model_loading_lock = {}  # Track model loading status to prevent concurrent loading
+        self.model_ready = {}  # Track if models are fully ready
+        
+        logger.info(f"Initializing VLLM Optimized Handler")
+        
+        # Don't pre-load models during initialization to prevent hangs
+        # Pre-loading will happen on-demand when models are actually needed
+        logger.info("Deferring model pre-loading to on-demand loading")
+        
+        # Also defer any other heavy initialization
+        self._initialized = False
+        self._initialization_error = None
+        
+        # Defer all heavy imports and initialization until needed
+        self._vllm_imported = False
+        self._directml_imported = False
+        self._transformers_imported = False
+    
+    def _import_vllm(self):
+        """Import VLLM modules only when needed"""
+        global VLLM_AVAILABLE, VLLM_CUDA_AVAILABLE, LLM, SamplingParams, torch
+        if self._vllm_imported:
+            return
+            
+        try:
+            import torch
+            # Check PyTorch installation type
+            PYTORCH_CUDA_AVAILABLE = torch.cuda.is_available()
+            PYTORCH_VERSION = torch.__version__
+
+            print(f"PyTorch version: {PYTORCH_VERSION}")
+            print(f"CUDA available: {PYTORCH_CUDA_AVAILABLE}")
+
+            # Try to import VLLM
+            from vllm import LLM as VLLM_LLM, SamplingParams as VLLM_SamplingParams
+            LLM = VLLM_LLM
+            SamplingParams = VLLM_SamplingParams
+            VLLM_AVAILABLE = True
+            
+            # Check if CUDA is available for VLLM
+            if PYTORCH_CUDA_AVAILABLE:
+                VLLM_CUDA_AVAILABLE = True
+                print("✅ VLLM with CUDA support available")
+            else:
+                print("⚠️ VLLM available but CUDA not available, will use CPU fallback")
+        except ImportError as e:
+            print(f"⚠️ VLLM not available: {e}")
+        except Exception as e:
+            print(f"⚠️ VLLM not available due to error: {e}")
+        
+        self._vllm_imported = True
+    
+    def _import_directml(self):
+        """Import DirectML modules only when needed"""
+        global DML_AVAILABLE, torch_directml
+        if self._directml_imported:
+            return
+            
+        try:
+            import torch_directml
+            DML_AVAILABLE = True
+            print("✅ DirectML support available as fallback")
+        except ImportError:
+            print("⚠️ DirectML not available")
+            torch_directml = None
+        
+        self._directml_imported = True
+    
+    def _import_transformers(self):
+        """Import transformers modules only when needed"""
+        global AutoTokenizer, AutoModelForCausalLM
+        if self._transformers_imported:
+            return
+            
+        try:
+            from transformers import AutoTokenizer as AT, AutoModelForCausalLM as AM
+            AutoTokenizer = AT
+            AutoModelForCausalLM = AM
+        except ImportError as e:
+            print(f"⚠️ Transformers not available: {e}")
+            raise
+        
+        self._transformers_imported = True
+    
+    def _ensure_initialized(self):
+        """Ensure the handler is properly initialized"""
+        if self._initialized:
+            return True
+        if self._initialization_error:
+            raise self._initialization_error
+            
+        try:
+            # Import required modules
+            self._import_vllm()
+            self._import_directml()
+            self._import_transformers()
+            
+            # Any heavy initialization that needs to happen can go here
+            # For now, we're just marking it as initialized
+            self._initialized = True
+            return True
+        except Exception as e:
+            self._initialization_error = e
+            logger.error(f"Failed to initialize VLLM handler: {e}")
+            return False
+    
+    def _preload_models(self):
+        """Pre-load models based on strategy for faster response times"""
+        try:
+            if MODEL_PRELOAD_STRATEGY == "lightweight_only":
+                logger.info("Pre-loading lightweight model (TinyLlama) for faster responses...")
+                # Use a background thread to load models without blocking initialization
+                import threading
+                def load_models_bg():
+                    try:
+                        asyncio.run(self.load_model_on_demand("tinyllama"))
+                        self.model_ready["tinyllama"] = True
+                        logger.info("✅ Lightweight model pre-loaded successfully")
+                    except Exception as e:
+                        logger.error(f"❌ Error pre-loading lightweight model: {e}")
+                        self.model_ready["tinyllama"] = False
+                
+                thread = threading.Thread(target=load_models_bg, daemon=True)
+                thread.start()
+            elif MODEL_PRELOAD_STRATEGY == "both":
+                logger.info("Pre-loading both models for fastest responses...")
+                # Use a background thread to load models without blocking initialization
+                import threading
+                def load_models_bg():
+                    try:
+                        asyncio.run(self.load_model_on_demand("tinyllama"))
+                        self.model_ready["tinyllama"] = True
+                        asyncio.run(self.load_model_on_demand("phi3"))
+                        self.model_ready["phi3"] = True
+                        logger.info("✅ Both models pre-loaded successfully")
+                    except Exception as e:
+                        logger.error(f"❌ Error pre-loading models: {e}")
+                        self.model_ready["tinyllama"] = False
+                        self.model_ready["phi3"] = False
+                
+                thread = threading.Thread(target=load_models_bg, daemon=True)
+                thread.start()
+            else:
+                logger.info("No model pre-loading strategy configured")
+        except Exception as e:
+            logger.warning(f"Model pre-loading failed: {e}")
+    
+    def _generate_cache_key(self, text: str) -> str:
+        """Generate a cache key for the given text"""
+        return hashlib.md5(text.encode()).hexdigest()
+    
+    def _get_optimal_device(self):
+        """Get the optimal device for inference"""
+        # Make sure we have imported the necessary modules
+        self._ensure_initialized()
+        
+        # Priority: CUDA > DirectML > CPU
+        if VLLM_CUDA_AVAILABLE and torch is not None and torch.cuda.is_available():
+            print("Using CUDA for VLLM inference")
+            return "cuda"
+        elif DML_AVAILABLE and torch_directml is not None and torch_directml.is_available():
+            dml_device = torch_directml.device()
+            print(f"Using DirectML device: {dml_device}")
+            return dml_device
+        else:
+            print("Using CPU for inference")
+            return "cpu"
+    
+    async def load_model_on_demand(self, model_name: str) -> bool:
+        """
+        Load a model on demand with VLLM optimizations or fallbacks.
+        """
+        # Make sure we have imported the necessary modules
+        self._ensure_initialized()
+        
+        # If model is already loaded, return True
+        if model_name in self.models and self.model_loaded.get(model_name, False):
+            logger.info(f"🔄 {model_name} model already loaded")
+            return True
+
+        # Check if model is currently being loaded by another thread
+        if model_name in self.model_loading_lock and self.model_loading_lock[model_name]:
+            # Wait for model to finish loading
+            import time
+            logger.info(f"⏳ {model_name} model is currently loading, waiting...")
+            while model_name in self.model_loading_lock and self.model_loading_lock[model_name]:
+                time.sleep(0.1)  # Wait 100ms
+            # Check if loading was successful
+            if model_name in self.models and self.model_loaded.get(model_name, False):
+                logger.info(f"✅ {model_name} model loaded by another thread")
+                return True
+            else:
+                logger.error(f"❌ {model_name} model failed to load in another thread")
+                return False
+
+        # Mark model as loading
+        self.model_loading_lock[model_name] = True
+
+        try:
+            model_path = self._resolve_model_path(model_name)
+            if not model_path:
+                raise ValueError(f"Model path not found for {model_name}")
+            
+            logger.info(f"📥 Loading {model_name} model from: {model_path}")
+            
+            # Clear memory before loading
+            self._cleanup_memory()
+            
+            # Load tokenizer
+            self.tokenizers[model_name] = AutoTokenizer.from_pretrained(
+                model_path,
+                local_files_only=True
+            )
+            
+            # Determine the best inference method
+            if VLLM_AVAILABLE and VLLM_CUDA_AVAILABLE and LLM is not None:
+                # Use VLLM with CUDA
+                return self._load_model_vllm_cuda(model_name, model_path)
+            elif DML_AVAILABLE and torch_directml and torch_directml.is_available():
+                # Use DirectML as fallback
+                return self._load_model_directml(model_name, model_path)
+            else:
+                # Use CPU-based inference
+                return self._load_model_cpu(model_name, model_path)
+                
+        except Exception as e:
+            logger.error(f"❌ Error loading {model_name} model: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return False
+    
+    def _load_model_vllm_cuda(self, model_name: str, model_path: str) -> bool:
+        """Load model using VLLM with CUDA"""
+        if not VLLM_AVAILABLE or not VLLM_CUDA_AVAILABLE or LLM is None:
+            logger.error("VLLM with CUDA not available")
+            return False
+            
+        # Default values
+        gpu_memory_utilization = 0.85
+        max_model_len = 4096
+            
+        try:
+            # Check available GPU memory before loading
+            if torch.cuda.is_available():
+                device = torch.cuda.current_device()
+                total_memory = torch.cuda.get_device_properties(device).total_memory
+                reserved_memory = torch.cuda.memory_reserved(device)
+                available_memory = total_memory - reserved_memory
+                
+                # If less than 4GB available, reduce memory utilization
+                if available_memory < 4 * 1024 * 1024 * 1024:  # 4GB
+                    gpu_memory_utilization = 0.6
+                    max_model_len = 2048
+                    logger.warning(f"Low GPU memory detected ({available_memory / (1024**3):.2f}GB), reducing memory utilization to {gpu_memory_utilization}")
+            
+            vllm_kwargs = {
+                "model": model_path,
+                "tokenizer": model_path,
+                "tokenizer_mode": "auto",
+                "trust_remote_code": True,
+                "dtype": "float16",
+                "max_model_len": max_model_len,
+                "gpu_memory_utilization": gpu_memory_utilization,
+                "enforce_eager": False,
+                "tensor_parallel_size": 1,
+                "swap_space": 4,
+            }
+            
+            logger.info(f"Loading model with VLLM CUDA kwargs: {vllm_kwargs}")
+            self.models[model_name] = LLM(**vllm_kwargs)
+            self.model_loaded[model_name] = True
+            logger.info(f"✅ {model_name} model loaded successfully with VLLM CUDA!")
+            return True
+        except RuntimeError as e:
+            if "out of memory" in str(e).lower() or "not enough memory" in str(e).lower():
+                logger.error(f"❌ GPU memory error loading {model_name} model with VLLM CUDA: {e}")
+                logger.info("Falling back to DirectML due to GPU memory constraints...")
+                # Mark as failed so we can try DirectML fallback
+                return False
+            else:
+                logger.error(f"❌ Error loading {model_name} model with VLLM CUDA: {e}")
+                return False
+        except Exception as e:
+            logger.error(f"❌ Error loading {model_name} model with VLLM CUDA: {e}")
+            return False
+    
+    def _load_model_directml(self, model_name: str, model_path: str) -> bool:
+        """Load model using DirectML as fallback with memory management"""
+        if not DML_AVAILABLE or torch_directml is None:
+            logger.error("DirectML not available")
+            return False
+            
+        try:
+            # For memory-constrained environments like RX580, unload other models first
+            # This prevents out-of-memory errors when loading multiple large models
+            if model_name == "phi3":
+                # If we're loading the large Phi-3 model, unload TinyLlama first if it's loaded
+                if "tinyllama" in self.models and self.model_loaded.get("tinyllama", False):
+                    logger.info("Unloading TinyLlama to free memory for Phi-3...")
+                    self.unload_model("tinyllama")
+            elif model_name == "tinyllama":
+                # If we're loading TinyLlama and Phi-3 is loaded, consider unloading it
+                if "phi3" in self.models and self.model_loaded.get("phi3", False):
+                    # Check available memory if possible
+                    try:
+                        if hasattr(torch_directml, 'get_device_properties'):
+                            dml_device = torch_directml.device()
+                            props = torch_directml.get_device_properties(dml_device)
+                            total_memory_gb = props.total_memory / (1024**3)
+                            # If less than 6GB total memory, unload Phi-3 when loading TinyLlama
+                            if total_memory_gb < 6:
+                                logger.info("Unloading Phi-3 to free memory for TinyLlama...")
+                                self.unload_model("phi3")
+                    except Exception as e:
+                        logger.warning(f"Could not check GPU memory: {e}")
+            
+            # Use DirectML-specific optimizations
+            model_kwargs = {
+                "local_files_only": True,
+                "low_cpu_mem_usage": True,
+                "torch_dtype": torch.float32,
+                "use_safetensors": True,
+                "attn_implementation": "eager",
+            }
+            
+            # Load model
+            self.models[model_name] = AutoModelForCausalLM.from_pretrained(
+                model_path,
+                **model_kwargs
+            )
+            
+            # Move to DirectML device
+            dml_device = torch_directml.device()
+            self.models[model_name] = self.models[model_name].to(dml_device)
+            self.model_loaded[model_name] = True
+            logger.info(f"✅ {model_name} model loaded successfully with DirectML!")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error loading {model_name} model with DirectML: {e}")
+            return False
+    
+    def _load_model_cpu(self, model_name: str, model_path: str) -> bool:
+        """Load model using CPU with optimizations"""
+        try:
+            # CPU-specific optimizations
+            model_kwargs = {
+                "local_files_only": True,
+                "low_cpu_mem_usage": True,
+                "torch_dtype": torch.float32,
+                "use_safetensors": True,
+                "attn_implementation": "eager",
+            }
+            
+            # For CPU, consider using smaller models or quantization if available
+            available_memory_gb = psutil.virtual_memory().available / (1024**3)
+            if available_memory_gb < 2:
+                logger.info(f"Low memory mode: {available_memory_gb:.2f}GB available")
+                # Could implement additional optimizations here
+            
+            # Load model
+            self.models[model_name] = AutoModelForCausalLM.from_pretrained(
+                model_path,
+                **model_kwargs
+            )
+            
+            # Move to CPU
+            self.models[model_name] = self.models[model_name].to("cpu")
+            self.model_loaded[model_name] = True
+            logger.info(f"✅ {model_name} model loaded successfully on CPU!")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error loading {model_name} model on CPU: {e}")
+            return False
+    
+    def _cleanup_memory(self):
+        """Clean up memory before loading models"""
+        gc.collect()
+        # Only try to clean up CUDA memory if torch is available and imported
+        if torch is not None and hasattr(torch, 'cuda') and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            
+    def _resolve_model_path(self, model_name: str) -> Optional[str]:
+        """Resolve the model path based on configuration and conventions."""
+        config_key = "lightweight" if model_name == "tinyllama" else "reasoning" if model_name == "phi3" else model_name
+        model_config = self.config.get("llm", {}).get(config_key, {})
+        model_path = model_config.get("model_path")
+
+        if model_path and os.path.exists(model_path):
+            return model_path
+        
+        # Fallback to conventional paths
+        if model_name == "tinyllama":
+            default_path = "./models/tinyllama"
+        elif model_name == "phi3":
+            default_path = "./models/phi-3-mini"
+        else:
+            default_path = f"./models/{model_name}"
+        
+        if os.path.exists(default_path):
+            return default_path
+            
+        logger.warning(f"Could not resolve model path for {model_name}. Checked config key '{config_key}' and default path '{default_path}'.")
+        return None
+    
+    def unload_model(self, model_name: str):
+        """Unload a model to free memory"""
+        if model_name in self.models:
+            del self.models[model_name]
+            del self.tokenizers[model_name]
+            self.model_loaded[model_name] = False
+            self._cleanup_memory()
+            logger.info(f"⏏️ Unloaded {model_name} model to free memory")
+    
+    def cache_context(self, key: str, context_data: Dict[str, Any]):
+        """Cache context data with both in-memory and image-based storage"""
+        try:
+            # Save to in-memory cache
+            self.context_cache[key] = context_data
+            
+            # Save to image-based cache for persistence
+            self._save_context_to_image(context_data, key)
+            
+            logger.info(f"Cached context with key: {key}")
+        except Exception as e:
+            logger.error(f"Error caching context: {e}")
+    
+    def _save_context_to_image(self, context_data: Dict[str, Any], cache_key: str) -> Optional[str]:
+        """Save context data as a quantized image for efficient storage"""
+        try:
+            # Convert context data to a numpy array
+            # For simplicity, we'll serialize the data and convert to bytes
+            serialized = json.dumps(context_data).encode('utf-8')
+            
+            # Convert to numpy array
+            byte_array = np.frombuffer(serialized, dtype=np.uint8)
+            
+            # Reshape to a 2D array (we'll make it roughly square)
+            size = int(np.ceil(np.sqrt(len(byte_array))))
+            padded = np.pad(byte_array, (0, size*size - len(byte_array)), mode='constant')
+            image_array = padded.reshape((size, size))
+            
+            # Create image from array
+            image = Image.fromarray(image_array, mode='L')  # Grayscale
+            
+            # Save image
+            cache_file = os.path.join(CONTEXT_CACHE_DIR, f"{cache_key}.png")
+            image.save(cache_file, format='PNG')
+            
+            logger.info(f"Saved context to image: {cache_file}")
+            return cache_file
+        except Exception as e:
+            logger.error(f"Error saving context to image: {e}")
+            return None
+    
+    def get_cached_context(self, key: str) -> Optional[Dict[str, Any]]:
+        """Retrieve cached context data"""
+        try:
+            # Check in-memory cache first
+            if key in self.context_cache:
+                logger.info(f"Retrieved context from memory cache: {key}")
+                return self.context_cache[key]
+            
+            # Check image-based cache
+            context_data = self._load_context_from_image(key)
+            if context_data:
+                # Also save to in-memory cache for faster access next time
+                self.context_cache[key] = context_data
+                logger.info(f"Retrieved context from image cache: {key}")
+                return context_data
+            
+            return None
+        except Exception as e:
+            logger.error(f"Error retrieving cached context: {e}")
+            return None
+    
+    def _load_context_from_image(self, cache_key: str) -> Optional[Dict[str, Any]]:
+        """Load context data from a quantized image"""
+        try:
+            cache_file = os.path.join(CONTEXT_CACHE_DIR, f"{cache_key}.png")
+            if not os.path.exists(cache_file):
+                return None
+            
+            # Load image
+            image = Image.open(cache_file)
+            image_array = np.array(image)
+            
+            # Flatten array and remove padding
+            flat_array = image_array.flatten()
+            # Remove padding (zeros at the end)
+            data_bytes = flat_array[flat_array != 0]
+            
+            # Convert back to string and parse JSON
+            serialized = data_bytes.tobytes().decode('utf-8')
+            context_data = json.loads(serialized)
+            
+            logger.info(f"Loaded context from image: {cache_file}")
+            return context_data
+        except Exception as e:
+            logger.error(f"Error loading context from image: {e}")
+            return None
+    
+    async def generate_response(self, model_type: str, messages: List[Dict[str, str]], 
+                         max_tokens: int = 100, temperature: float = 0.7) -> str:
+        """
+        Generate a response using the specified local model with VLLM or fallbacks.
+        """
+        # Start performance monitoring
+        start_time = start_request_timer()
+        tokens_generated = 0
+        
+        try:
+            # Load model if not already loaded - wait for it to be ready
+            if model_type not in self.models or not self.model_loaded.get(model_type, False):
+                logger.info(f"🔄 Loading {model_type} model on demand...")
+                # Wait for model to be loaded (with timeout)
+                import time
+                timeout = 60  # 60 second timeout
+                start_wait = time.time()
+                
+                # Trigger model loading if not already triggered
+                if model_type not in self.model_loading_lock or not self.model_loading_lock.get(model_type, False):
+                    success = await self.load_model_on_demand(model_type)
+                    if not success:
+                        raise ValueError(f"Failed to load {model_type} model")
+                
+                # Wait for model to be ready
+                while (model_type not in self.models or not self.model_loaded.get(model_type, False)) and \
+                      (time.time() - start_wait) < timeout:
+                    time.sleep(0.5)  # Check every 500ms
+                    logger.info(f"⏳ Waiting for {model_type} model to load...")
+                
+                # Check if model loaded successfully
+                if model_type not in self.models or not self.model_loaded.get(model_type, False):
+                    raise ValueError(f"Failed to load {model_type} model within timeout period")
+            
+            if model_type not in self.models:
+                raise ValueError(f"Model {model_type} could not be loaded")
+            
+            tokenizer = self.tokenizers[model_type]
+            model = self.models[model_type]
+            
+            # Format messages for the model
+            logger.info(f"Formatting messages for {model_type}")
+            prompt = tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                tokenize=False
+            )
+            
+            # Determine generation method based on how the model was loaded
+            if VLLM_AVAILABLE and VLLM_CUDA_AVAILABLE and hasattr(model, 'generate') and callable(getattr(model, 'generate', None)):
+                # Use VLLM generation
+                return self._generate_response_vllm(model_type, tokenizer, model, prompt, max_tokens, temperature, start_time, tokens_generated)
+            else:
+                # Use standard transformers generation
+                return self._generate_response_transformers(model_type, tokenizer, model, messages, max_tokens, temperature, start_time, tokens_generated)
+            
+        except Exception as e:
+            logger.error(f"❌ Error generating response with {model_type}: {e}")
+            logger.error(f"Error type: {type(e).__name__}")
+            import traceback
+            error_traceback = traceback.format_exc()
+            logger.error(f"Traceback: {error_traceback}")
+            
+            # Record failed performance metrics
+            end_request_timer(start_time, 0, model_type, 0, False)
+            
+            return f"Error generating response with {model_type}: {str(e)}\nTraceback:\n{error_traceback}"     
+
+    def _generate_response_vllm(self, model_type: str, tokenizer, model, prompt: str,
+                               max_tokens: int, temperature: float, start_time, tokens_generated) -> str:
+        """Generate response using VLLM"""
+        try:
+            if SamplingParams is not None:
+                sampling_params = SamplingParams(
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    top_p=0.9,
+                    top_k=50,
+                    repetition_penalty=1.2,
+                    stop_token_ids=[tokenizer.eos_token_id],
+                )
+            else:
+                raise RuntimeError("VLLM SamplingParams not available")
+            
+            logger.info(f"Generating response with VLLM, max_tokens={max_tokens}, temperature={temperature}")
+            
+            if LLM is not None:
+                outputs = model.generate([prompt], sampling_params, use_tqdm=False)
+            else:
+                raise RuntimeError("VLLM LLM not available")
+            
+            # Extract response
+            if outputs and len(outputs) > 0:
+                response = outputs[0].outputs[0].text
+                tokens_generated = len(outputs[0].outputs[0].token_ids)
+            else:
+                response = ""
+            
+            # Record performance metrics
+            end_request_timer(start_time, tokens_generated, model_type, len(prompt), True)
+            
+            return response.strip()
+        except Exception as e:
+            logger.error(f"❌ Error in VLLM generation: {e}")
+            # Record failed performance metrics
+            end_request_timer(start_time, 0, model_type, 0, False)
+            raise
+
+    def _generate_response_transformers(self, model_type: str, tokenizer, model, messages: List[Dict[str, str]],
+                                       max_tokens: int, temperature: float, start_time, tokens_generated) -> str:
+        """Generate response using standard transformers"""
+        try:
+            # Format inputs for transformers
+            inputs = tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                tokenize=True,
+                return_dict=True,
+                return_tensors="pt",
+            )
+            
+            # Move to appropriate device
+            device = next(model.parameters()).device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+            
+            # Generate with transformers using safer parameters
+            with torch.no_grad():
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=max_tokens,
+                    temperature=temperature,
+                    do_sample=True,
+                    pad_token_id=tokenizer.eos_token_id,
+                    # Add safer generation parameters to avoid einsum errors
+                    use_cache=True,
+                    # Remove explicit attention_mask since it's already in inputs
+                )
+            
+            # Decode response
+            response_tokens = outputs[0][inputs["input_ids"].shape[-1]:]
+            response = tokenizer.decode(response_tokens, skip_special_tokens=True)
+            tokens_generated = len(response_tokens)
+            
+            # Record performance metrics
+            end_request_timer(start_time, tokens_generated, model_type, 
+                            inputs["input_ids"].shape[-1] if "input_ids" in inputs else 0, True)
+            
+            return response.strip()
+        except Exception as e:
+            logger.error(f"❌ Error in transformers generation: {e}")
+            # Record failed performance metrics
+            end_request_timer(start_time, 0, model_type, 0, False)
+            raise
+
+    async def chat_with_agent(self, agent_type: str, user_input: str, 
+                             context: Optional[str] = None) -> str:
+        """
+        Chat with a specific agent type using VLLM.
+        
+        Args:
+            agent_type: Type of agent ("lightweight" or "reasoning")
+            user_input: User's message
+            context: Additional context for the conversation
+            
+        Returns:
+            Agent's response
+        """
+        # Map agent types to model types
+        model_mapping = {
+            "lightweight": "tinyllama",
+            "reasoning": "qwen2-0.5b"  # Updated to use Qwen2-0.5B instead of phi3
+        }
+        
+        model_type = model_mapping.get(agent_type)
+        if not model_type:
+            raise ValueError(f"Unknown agent type: {agent_type}")
+        
+        # Load model on demand
+        await self.load_model_on_demand(model_type)
+        
+        # Get model configuration
+        model_config = self.config.get("llm", {}).get(agent_type, {})
+        max_tokens = model_config.get("max_tokens", 100)
+        temperature = model_config.get("temperature", 0.7)
+        
+        # Prepare messages with enhanced structure for better reasoning
+        messages = []
+        
+        # Add system instructions for better reasoning
+        system_instruction = """
+YouYou are OpenManus, an advanced AI assistant with exceptional reasoning capabilities. 
+Please follow these guidelines:
+1. Think step by step when solving complex problems
+2. Analyze tasks carefully before deciding on actions
+3. If you need current information, use the web_search tool
+4. For coding tasks, use the python_execute tool
+5. For file operations, use the str_replace_editor tool
+6. Always verify facts that might be time-sensitive
+7. Be concise but thorough in your explanations
+8. If you're unsure about something, admit it rather than making things up
+9. When deciding to use tools, first analyze why they're needed
+10. After using tools, integrate the results into your reasoning
+11. Respond naturally and conversationally without being overly constrained
+12. Feel free to express creativity and personality in your responses
+
+"""
+        
+        if context:
+            # Combine system instruction with provided context
+            full_system_content = system_instruction + context
+            messages.append({"role": "system", "content": full_system_content})
+        else:
+            # Use system instruction alone
+            messages.append({"role": "system", "content": system_instruction.strip()})
+        
+        messages.append({"role": "user", "content": user_input})
+        
+        # Generate response
+        response = await self.generate_response(
+            model_type, messages, max_tokens, temperature
+        )
+        
+        return response
+
+# Example usage
+if __name__ == "__main__":
+    # Example configuration
+    config = {
+        "llm": {
+            "lightweight": {
+                "model_path": "./models/tinyllama",
+                "max_tokens": 1024,
+                "temperature": 0.5
+            },
+            "reasoning": {
+                "model_path": "./models/qwen2-0.5b",  # Updated to use Qwen2-0.5B
+                "max_tokens": 2048,
+                "temperature": 0.7
+            }
+        }
+    }
+    
+    # Initialize and test
+    handler = VLLMOptimizedHandler(config)
+    print("VLLM Optimized Handler initialized!")

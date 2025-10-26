@@ -1,0 +1,19 @@
+{
+  "model_loading_strategy": "sequential_with_unload",
+  "preload_strategy": "lightweight_only",
+  "hybrid_loading": {
+    "strategy": "selective_offload",
+    "memory_threshold_gb": 6,
+    "unload_when_switching": true
+  },
+  "kv_cache": {
+    "enabled": true,
+    "max_entries": 1000,
+    "offload_to_cpu": true
+  },
+  "cleanup": {
+    "gc_collect": true,
+    "empty_cache": true,
+    "unload_unused_models": true
+  }
+}
