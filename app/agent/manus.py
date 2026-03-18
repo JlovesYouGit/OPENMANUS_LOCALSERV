@@ -15,6 +15,7 @@ from app.tool.mcp import MCPClients, MCPClientTool
 from app.tool.python_execute import PythonExecute
 from app.tool.str_replace_editor import StrReplaceEditor
 from app.tool.web_search import WebSearch
+from app.tool.brain_mesh_tool import BrainMeshTool
 from app.utils.entity_resolution import resolve_entities_in_query, is_financial_query
 from app.utils.consistency_audit import financial_auditor
 from app.utils.output_filter import filter_model_output, handle_ambiguous_entity_response
@@ -46,6 +47,7 @@ class Manus(ToolCallAgent):
             StrReplaceEditor(),
             AskHuman(),
             WebSearch(),  # Add the WebSearch tool for current information
+            BrainMeshTool(),
             Terminate(),
         )
     )
