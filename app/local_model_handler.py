@@ -24,8 +24,92 @@ class LocalModelHandler:
         self.models = {}
         self.tokenizers = {}
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        # runtime control state for enforcement
+        self.adapter_scales: Dict[str, float] = {}
+        self.layer_multipliers: Dict[int, float] = {}
+        self.attention_gains: Dict[str, float] = {}
+        # adapters placeholder (if using LoRA adapters)
+        self.adapters: Dict[str, Any] = {}
         
         logger.info(f"Initializing LocalModelHandler with device: {self.device}")
+
+    # === Runtime enforcement API ===
+    def apply_adapter_scales(self, adapter_map: Dict[str, float]) -> None:
+        """Set per-adapter inference scale factors (non-destructive)."""
+        for name, scale in adapter_map.items():
+            self.adapter_scales[name] = float(scale)
+        logger.info(f"Applied adapter scales: {adapter_map}")
+
+    def set_layer_multipliers(self, layer_map: Dict[str, float]) -> None:
+        """Set per-layer multiplicative factors applied during forward pass."""
+        for idx_str, mult in layer_map.items():
+            self.layer_multipliers[int(idx_str)] = float(mult)
+        logger.info(f"Set layer multipliers: {layer_map}")
+
+    def set_attention_gains(self, gains: Dict[str, float]) -> None:
+        """Set attention gain per zone/key."""
+        for k, v in gains.items():
+            self.attention_gains[str(k)] = float(v)
+        logger.info(f"Set attention gains: {gains}")
+
+    def apply_lora_update(self, adapter_name: str, grads: List[Any], lr: float = 1e-5) -> None:
+        """Apply a tiny LoRA-style gradient step to adapter params (requires adapters present)."""
+        adapter = self.adapters.get(adapter_name)
+        if adapter is None:
+            logger.warning(f"Adapter {adapter_name} not present for LoRA update")
+            return
+        # simplistic update: assumes adapter.parameters() yields tensors
+        for p, g in zip(adapter.parameters(), grads):
+            if hasattr(p, 'data'):
+                p.data = p.data - lr * g
+        logger.info(f"Applied LoRA update to {adapter_name} with lr={lr}")
+
+    def token_logprob(self, text: str) -> Dict[str, float]:
+        """Compute sum log-prob and token count for a single text using the lightweight model.
+
+        Returns dict: {'sum_logprob': float, 'count': int}
+        """
+        # Use lightweight model for fast validation if available
+        model_name = 'tinyllama' if 'tinyllama' in self.models else next(iter(self.models.keys()))
+        tokenizer = self.tokenizers[model_name]
+        model = self.models[model_name]
+        with torch.no_grad():
+            inputs = tokenizer(text, return_tensors='pt').to(model.device)
+            outputs = model(**inputs, labels=inputs['input_ids'])
+            # outputs.loss is average negative log-likelihood
+            # total logprob = -loss * seq_len
+            seq_len = inputs['input_ids'].shape[-1]
+            if hasattr(outputs, 'loss') and outputs.loss is not None:
+                total_logprob = -float(outputs.loss.item()) * seq_len
+            else:
+                total_logprob = 0.0
+        return {'sum_logprob': total_logprob, 'count': seq_len}
+
+    def validate_on_tokens(self, inputs: List[str]) -> float:
+        """Run a fast token-level validation; return avg logprob per token."""
+        total_logprob = 0.0
+        total_tokens = 0
+        for txt in inputs:
+            r = self.token_logprob(txt)
+            total_logprob += r['sum_logprob']
+            total_tokens += r['count']
+        if total_tokens == 0:
+            return float('-inf')
+        return total_logprob / float(total_tokens)
+
+    def compute_adapter_grads(self, adapter_name: str, inputs: List[str]) -> List[Any]:
+        """Compute simple gradient signals for adapter parameters based on negative log-likelihood on inputs.
+
+        This is a simplified placeholder — real gradient computation requires backprop through model and adapter.
+        """
+        # Placeholder: return zeros for each parameter
+        adapter = self.adapters.get(adapter_name)
+        if adapter is None:
+            return []
+        grads = []
+        for p in adapter.parameters():
+            grads.append(torch.zeros_like(p.data))
+        return grads
         
     async def load_models(self):
         """Load all configured local models asynchronously."""
