@@ -1,49 +1,96 @@
+"""
+OpenManus Setup Configuration
+
+This file maintains backwards compatibility with older pip versions.
+For modern Python packaging, see pyproject.toml
+"""
 from setuptools import find_packages, setup
 
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+def read_readme():
+    """Read README file for long description."""
+    try:
+        with open("README.md", "r", encoding="utf-8") as fh:
+            return fh.read()
+    except FileNotFoundError:
+        return "A versatile AI agent system that can solve various tasks using multiple tools"
+
+
+def read_requirements():
+    """Read requirements from requirements.txt."""
+    try:
+        with open("requirements.txt", "r", encoding="utf-8") as f:
+            return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+    except FileNotFoundError:
+        return []
+
 
 setup(
     name="openmanus",
     version="0.1.0",
-    author="mannaandpoem and OpenManus Team",
+    author="OpenManus Team",
     author_email="mannaandpoem@gmail.com",
-    description="A versatile agent that can solve various tasks using multiple tools",
-    long_description=long_description,
+    description="A versatile AI agent system that can solve various tasks using multiple tools",
+    long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/FoundationAgents/OpenManus",
-    packages=find_packages(),
-    install_requires=[
-        "pydantic~=2.10.4",
-        "openai>=1.58.1,<1.67.0",
-        "tenacity~=9.0.0",
-        "pyyaml~=6.0.2",
-        "loguru~=0.7.3",
-        "numpy",
-        "datasets>=3.2,<3.5",
-        "html2text~=2024.2.26",
-        "gymnasium>=1.0,<1.2",
-        "pillow>=10.4,<11.2",
-        "browsergym~=0.13.3",
-        "uvicorn~=0.34.0",
-        "unidiff~=0.7.5",
-        "browser-use~=0.1.40",
-        "googlesearch-python~=1.3.0",
-        "aiofiles~=24.1.0",
-        "pydantic_core>=2.27.2,<2.28.0",
-        "colorama~=0.4.6",
-    ],
+    url="https://github.com/JlovesYouGit/OPENMANUS_LOCALSERV",
+    project_urls={
+        "Documentation": "https://github.com/JlovesYouGit/OPENMANUS_LOCALSERV/wiki",
+        "Source": "https://github.com/JlovesYouGit/OPENMANUS_LOCALSERV",
+        "Issues": "https://github.com/JlovesYouGit/OPENMANUS_LOCALSERV/issues",
+        "Changelog": "https://github.com/JlovesYouGit/OPENMANUS_LOCALSERV/releases",
+    },
+    packages=find_packages(exclude=["tests", "tests.*", "a2a-samples", "a2a-samples.*", "examples", "examples.*"]),
+    install_requires=read_requirements(),
+    extras_require={
+        "dev": [
+            "pytest>=8.3.5",
+            "pytest-asyncio>=0.25.3",
+            "black>=24.0.0",
+            "isort>=5.13.0",
+            "flake8>=7.0.0",
+            "mypy>=1.8.0",
+            "pre-commit>=3.6.0",
+        ],
+        "test": [
+            "pytest>=8.3.5",
+            "pytest-asyncio>=0.25.3",
+            "pytest-cov>=4.1.0",
+            "pytest-mock>=3.12.0",
+        ],
+        "docs": [
+            "mkdocs>=1.5.3",
+            "mkdocs-material>=9.5.0",
+            "mkdocstrings[python]>=0.24.0",
+        ],
+    },
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.12",
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.12",
     entry_points={
         "console_scripts": [
             "openmanus=main:main",
+            "openmanus-web=web_ui:main",
+            "openmanus-mcp=run_mcp:main",
         ],
     },
+    include_package_data=True,
+    package_data={
+        "": ["*.toml", "*.yaml", "*.yml", "*.json", "*.md"],
+    },
+    keywords=[
+        "ai", "agent", "llm", "automation", "tools", "multi-agent",
+        "openai", "assistant", "chatbot", "machine-learning"
+    ],
+    zip_safe=False,
 )
